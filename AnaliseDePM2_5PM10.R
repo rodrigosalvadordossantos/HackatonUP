@@ -30,14 +30,17 @@ mudarWDemID = function(wdcol){
 	return(retorno)
 }
 
-mudarWD = function(){
+mudarTodosWD = function(estacoes){
 	for (i in 1:12){
 		wd=mudarWDemID(estacoes[[i]]$wd)
 		names(wd)="wd"
 		estacoes[[i]]$wd = wd$wd
-		print("estacao" + i + "finalizada)
+		print(c("estacao",i,"concluida"))
 	}
+	return(estacoes)
 }
+
+estacoes = mudarTodosWD(estacoes)
 
 #Imputar a media em todos os NA
 contarNA = function(df){
@@ -76,34 +79,43 @@ checarMedias = function(df){
 }
 
 #Verificar se a imputação eliminou os NAs
-for (i in 1:12){
-	contarNA(estacoes[[i]])
-	estacoes[[i]] = imputarMedia(estacoes[[i]])
-	contarNA(estacoes[[i]])
+imputarTodasMedias = function(estacoes){
+	for (i in 1:12){
+		print(c("NAs em",i,"antes: ",contarNA(estacoes[[i]])))
+		estacoes[[i]] = imputarMedia(estacoes[[i]])
+		print(c("NAs em",i,"depois: ",contarNA(estacoes[[i]])))
+	}
+	return (estacoes)
 }
+
+estacoes = imputarTodasMedias(estacoes)
 
 #Estatísticas do conjunto
 #Graficos e tabelas de correlação para PM2.5
-#plot(estacao1[c(6,8,9,10,11,12,13,14,15,16,17)])
-cor(estacao1[c(6,8,9,10,11,12,13,14,15,16,17)])
+#plot(estacoes[[1]][c(6,8,9,10,11,12,13,14,15,16,17)])
+cor(estacoes[[1]][c(6,8,9,10,11,12,13,14,15,16,17)])
 #Graficos e tabelas de correlação para PM10
-#plot(estacao1[c(7,8,9,10,11,12,13,14,15,16,17)])
-cor(estacao1[c(7,8,9,10,11,12,13,14,15,16,17)])
+#plot(estacoes[[1]][c(7,8,9,10,11,12,13,14,15,16,17)])
+cor(estacoes[[1]][c(7,8,9,10,11,12,13,14,15,16,17)])
 
 #Verificar multicolineariade do PM2.5
-for (i in 1:12){
-	pm25 <- lm(PM2.5 ~ SO2 + NO2 + CO + O3 + TEMP + PRES + DEWP + RAIN + wd + WSPM, data = estacoes[[i]])
-	1/(1-summary(pm25)$r.squared)
+verificarMulticolinearidades = function(estacoes){
+	for (i in 1:12){
+		pm25 <- lm(PM2.5 ~ SO2 + NO2 + CO + O3 + TEMP + PRES + DEWP + RAIN + wd + WSPM, data = estacoes[[i]])
+		print(1/(1-summary(pm25)$r.squared))
+	}
+
+	for (i in 1:12){
+		pm10 <- lm(PM10 ~ SO2 + NO2 + CO + O3 + TEMP + PRES + DEWP + RAIN + wd + WSPM, data = estacoes[[i]])
+		print(1/(1-summary(pm10)$r.squared))
+	}
+	return (estacoes)
 }
 
-#Verificar multicolineariade do PM10
-for (i in 1:12){
-	pm10 <- lm(PM10 ~ SO2 + NO2 + CO + O3 + TEMP + PRES + DEWP + RAIN + wd + WSPM, data = estacoes[[i]])
-	1/(1-summary(pm10)$r.squared)
-}
+estacoes = verificarMulticolinearidades(estacoes)
 
 #Construir o modelo que mais se ajuste aos dados
-install.packages("MASS")
+#install.packages("MASS")
 library(MASS)
 
 for (i in 1:12){
