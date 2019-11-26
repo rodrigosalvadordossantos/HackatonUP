@@ -1,0 +1,435 @@
+{
+ "cells": [
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "# Relatório de análise do comportamento dos poluentes PM2.5 e PM10"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "RODRIGO SALVADOR DOS SANTOS"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## INTRODUÇÃO\n",
+    "\n",
+    "Os resultados apresentados neste relatório foram obtidos a partir de dados disponibilizados em 21/11/2019. Os dados de origem deste trabalho foram obtidos no endereço https://archive.ics.uci.edu/ml/datasets/Beijing+Multi-Site+Air-Quality+Data, acessado em 23/11/2019, e abrangem o período de 1/3/2013 até 28/02/2017.\n",
+    "\n",
+    "A fim de apresentar resultados em um prazo curto, a abordagem é objetiva, mas mantendo a solidez de um processo analítico. Diversas aplicações relevantes, como comparações entre métodos, não foram aplicadas. Foram consideradas todas as 420.768 observações, que são as leituras dos dados em intervalos de 1 hora, a partir de 12 estações de leitura.\n"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## MATERIAIS E MÉTODOS\n",
+    "\n",
+    "Os seguintes materiais foram utilizados para a obtenção dos resultados:\n",
+    "- Planilha Excel (com a ferramenta Análise de Dados)\n",
+    "- Linguagem de programação R\n",
+    "\n",
+    "Os seguintes métodos foram aplicados:\n",
+    "- Imputação dos dados\n",
+    "- Correlação linear\n",
+    "- Regressão linear múltipla\n"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## QUESTÃO DE PESQUISA\n",
+    "\n",
+    "Na análise dos dados, nota-se que as planilhas apresentam estrutura semelhante. As primeiras colunas informam o momento da coleta dos dados. Na sequência, os indicadores PM2.5 e PM10 são apresentados. Em seguida, contam-se 10 variáveis referentes a componentes e características do ar, enquanto a última coluna apresenta o nome da estação responsável pela coleta.\n",
+    "\n",
+    "Com isso, identifica-se que os indicadores PM2.5 e PM10 são variáveis dependentes, cujo valor é gerado a partir da combinação das outras 10 informações que cumprem o papel de variáveis independentes.\n",
+    "\n",
+    "Nesta análise, a questão de pesquisa que se coloca é entender como cada variável independente influencia no cálculo dos indicadores. Com isso, criar a possibilidade de encontrar fatores críticos para o cálculo do indicador e prever ser comportamento futuro.\n"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## RESULTADOS\n",
+    "\n",
+    "O trabalho iniciou-se com o Excel, a fim de se obter uma ideia inicial do comportamento dos dados. Para trabalhar com um conjunto limitado de dados, foi selecionada a planilha PRSA_Data_Aotizhongxin_20130301-20170228.csv. Algumas das aplicações realizadas foram replicadas no código em R, de forma que, apesar da redundância, foi possíveis validar as etapas da análise com mais de uma ferramenta de trabalho.\n",
+    "\n",
+    "### IMPUTAÇÃO DE VALORES\n",
+    "\n",
+    "O primeiro processamento dos dados foi verificar a existência de dados faltantes, identificados nas planilhas como “NA”. De início, foram consideradas duas abordagens simples: excluir os registros com dados faltantes ou substituí-los por 0. Mas enquanto a primeira deliberadamente descarta dados e empobrece e análise, a segunda gera outliers desnecessários ou, ainda pior, influencia diretamente em dados como temperatura.\n",
+    "\n",
+    "Demandou-se, então, uma pesquisa por melhores métodos de tratar dados faltantes. Assunção (2012) apresenta 7 metodologias diferentes para o processo – uma delas, o descarte, que se provou a abordagem com o pior resultado analisado. Harell (2001) coloca um elemento a mais na anállise. O autor considera o percentual de dados faltantes no conjunto e sugere aplicações mais pesadas, como regressão linear simples, para conjuntos com mais de 15% de dados faltantes. Caso a quantidade seja inferior a 5%, recomenda imputações mais simples, como alterar cada dado faltante pelo valor médio do conjunto. Em bases que tenham entre 5 a 15% de problemas na coleta de dados, qualquer uma das imputações é adequada.\n",
+    "\n",
+    "Considerando todos os 596.088 dados da planilha, foram verificados apenas 7271 NA’s, correspondentes a 1,22% do volume total. Adotando a recomendação de Harell(2001), cada dado referenciado como NA foi substituído pela média do conjunto do qual faz parte.\n",
+    "\n",
+    "### VISUALIZAÇÃO DOS DADOS\n",
+    "\n",
+    "Ainda na planilha, optou-se por visualizar o comportamento da série temporal formada pelos indicadores PM2.5 e PM10. O volume de dados comprometeu a exibição completa da informação no Excel, sendo possível visualizar não mais que o período referente a um trimestre. O gráfico a seguir apresenta as séries mencionadas\n"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "![Grafico](grafico1.png)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "O gráfico indica a possibilidade de alta correlação entre os dois indicadores. Porém, não foi possível extrair maiores informações deste resultado. Aliado ao fato do limite de dados para o gráfico, foi feita a opção de não dar sequência a construção de gráficos no Excel. \n",
+    "\n",
+    "### CORRELAÇÃO\n",
+    "\n",
+    "A correlação é capaz de indicar se há relaçao entre os dados de duas observações. Quanto mais próximo a correlação estiver do valor 1, mais diretamente relacionadas estão as variáveis, ou seja, o crescimento de uma implica no crescimento da outra. Uma correlação é indireta, com o crescimento de uma variável implicando no decrescimento de outra, quando o valor se aproxima de -1. A inexistência de correlação acontece quando o valor é próximo de 0, indicando que o crescimento de uma variável em nada afeta o comportamento da outra. A tabela de correlações entre as variáveis, gerada a partir da ferramenta Análise de Dados do Excel, é observada a seguir:\n"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "![Tabela de Correlações](tabela1.png)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Conforme inferido a partir do gráfico, a correlação entre PM2.5 e PM10 é alta. O interesse na tabela, porém, é verificar multicolinearidades. Se uma variável independente apresentar alta correlação com a variável independente, ela pode ser observada de duas formas: como única variável explicativa, a partir de uma Regressão Linear Simples (RLS), ou excluída do conjunto de dados da Regressão Linear Múltipla (RLM). A literatura sugere a classificação de alta correlação para coeficientes próximos a 0,9 em valor absoluto. Na tabela, não se observa nenhum caso deste, indicando que o conjunto de dados é ideal para a aplicação de RLM.\n",
+    "\n",
+    "### Regressão Linear Múltipla\n",
+    "\n",
+    "A Regressão Linear Múltipla (RLM) também foi aplicada aos dados a partir da ferramenta Análise de Dados do Excel. O objetivo da RLM é identificar uma função de coeficientes lineares capaz de descrever o comportamento de uma variável independente em função de outras variáveis independentes. Cada coeficiente deve ser estimado em função dos valores observados a fim de montar um modelo final (dos Santos, 2019). Como exemplo, para a Regressão Linear Simples (na qual a estimação é baseada em apenas uma variável), os parâmetros são estimados pelas seguintes equações:\n",
+    "\n",
+    "\\begin{align*}\n",
+    "a = \\bar{y} + b\\bar{x}\n",
+    "\\end{align*}\n",
+    "\\begin{align*}\n",
+    "b= \\frac{\\sum_{i=1}^{n}x_{i}y_{i}-n\\bar{x}\\bar{y}}{\\sum{x^{2}_{i}-n\\bar{x}}}\n",
+    "\\end{align*}\n",
+    "\n",
+    "As tabelas a seguir apresentam os resultados da Regressão para cada indicador no Excel:\n"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "![Regressão para PM2.5](tabela2.png)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "![Regressão para PM10](tabela3.png)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Aqui, serão observados apenas as principais observações das tabelas. O modelo gerado é obtido a partir da coluna Coeficientes. O R-quadrado-ajustado mostra o quanto este modelo está ajustado aos dados. O modelo para o indicador PM2.5 obteve um R-quadrado-ajustado de 0,61, enquanto o mesmo valor para PM10 ficou e, 0,46. Além disso, outra métrica de qualidade é o F-valor na tabela da ANOVA, que cresce à medida que o modelo apresenta relações significativas com os dados observados – ou, ainda, cresce de forma inversamente proporcional ao erro gerado pelo modelo de regressão. O F-valor do modelo de PM2.5 atingiu 5477 enquanto no segundo caso não ultrapassou 2924.\n",
+    "\n",
+    "## CODIFICAÇÃO EM R\n",
+    "\n",
+    "Com alguns resultados iniciais em mãos, o próximo passo foi escalar a abordagem do problema para as 12 planilhas e encontrar melhores modelos. Foi escolhida a linguagem de programação R, que vem sendo bastante utilizada em análises estatísticas por conta de seu desempenho, acesso livre diversidade de opções em bibliotecas.\n",
+    "\n",
+    "A seguir, será apresentado o código com seus trechos comentados, com ênfase àqueles ainda não tratados neste documento:\n",
+    "\n",
+    "O código inicia apenas carregando as 12 planilhas em variáveis locais. Em seguida, uma lista armazena todos os conjuntos de dados para facilitar as manipulações"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "#Importar o csv\n",
+    "estacao1=read.csv(\"PRSA_Data_Aotizhongxin_20130301-20170228.csv\")\n",
+    "estacao2=read.csv(\"PRSA_Data_Changping_20130301-20170228.csv\")\n",
+    "estacao3=read.csv(\"PRSA_Data_Dingling_20130301-20170228.csv\")\n",
+    "estacao4=read.csv(\"PRSA_Data_Dongsi_20130301-20170228.csv\")\n",
+    "estacao5=read.csv(\"PRSA_Data_Guanyuan_20130301-20170228.csv\")\n",
+    "estacao6=read.csv(\"PRSA_Data_Gucheng_20130301-20170228.csv\")\n",
+    "estacao7=read.csv(\"PRSA_Data_Huairou_20130301-20170228.csv\")\n",
+    "estacao8=read.csv(\"PRSA_Data_Nongzhanguan_20130301-20170228.csv\")\n",
+    "estacao9=read.csv(\"PRSA_Data_Shunyi_20130301-20170228.csv\")\n",
+    "estacao10=read.csv(\"PRSA_Data_Tiantan_20130301-20170228.csv\")\n",
+    "estacao11=read.csv(\"PRSA_Data_Wanliu_20130301-20170228.csv\")\n",
+    "estacao12=read.csv(\"PRSA_Data_Wanshouxigong_20130301-20170228.csv\")\n",
+    "\n",
+    "estacoes = list(estacao1,estacao2,estacao3,estacao4,estacao5,estacao6,estacao7,estacao8,estacao9,estacao10,estacao11,estacao12)\n"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "A primeira manipulação realizada é a transformar a coluna \"wd\", cujo valor é informado em texto, em valores numéricos. As razões são duas: permitir o cálculo da correlação desta variável com as demais e melhorar o desempenho computacional dos métodos de Regressão Linear Múltipla. Vale destacar que é possível utilizar métodos de RLM mesmo com os valores como estão; a transformação é uma decisão do processo de análise."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "#Transformar a coluna WD em ID\n",
+    "wd = c('E','N','W','S','NE','NW','SE','SW','NNE','ENE','ESE','SSE','SSW','WSW','WNW','NNW')\n",
+    "id = c(1:16)\n",
+    "wd_id = data.frame(wd=wd, id=id)\n",
+    "\n",
+    "mudarWDemID = function(wdcol){\n",
+    "\tretorno = data.frame()\n",
+    "\tfor(i in 1:length(wdcol)){\n",
+    "\t\tretorno = rbind(retorno, wd_id[wd == wdcol[i],]$id)\n",
+    "\t\tif (is.na(retorno[i,])){\n",
+    "\t\t\tretorno[i,]=0\n",
+    "\t\t}\n",
+    "\t}\n",
+    "\treturn(retorno)\n",
+    "}\n",
+    "\n",
+    "mudarTodosWD = function(estacoes){\n",
+    "\tfor (i in 1:12){\n",
+    "\t\twd=mudarWDemID(estacoes[[i]]$wd)\n",
+    "\t\tnames(wd)=\"wd\"\n",
+    "\t\testacoes[[i]]$wd = wd$wd\n",
+    "\t\tprint(c(\"estacao\",i,\"concluida\"))\n",
+    "\t}\n",
+    "\treturn(estacoes)\n",
+    "}\n",
+    "\n",
+    "estacoes = mudarTodosWD(estacoes)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Em seguida, são tratados os dados faltantes, conforme mencionado no início deste documento. O método \"imputarTodasMedias()\" toma o cuidado de apresentar o total de valores NA antes e depois do processo de imputação"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "#Imputar a media em todos os NA\n",
+    "contarNA = function(df){\n",
+    "\tsomaNA=0\n",
+    "\tfor(i in 1:ncol(df)){\n",
+    "\t\tfor(j in 1:nrow(df)){\n",
+    "\t\t\tif (is.na(df[j,i])){\n",
+    "\t\t\t\tsomaNA = somaNA + 1\n",
+    "\t\t\t}\n",
+    "\t\t}\n",
+    "\t}\n",
+    "\treturn (somaNA)\n",
+    "}\n",
+    "\n",
+    "imputarMedia = function(df){\n",
+    "\tfor(i in 1:ncol(df)){\n",
+    "\t\tmedia = mean(na.omit(df[,i]))\n",
+    "\t\tfor(j in 1:nrow(df)){\n",
+    "\t\t\tif (is.na(df[j,i])){\n",
+    "\t\t\t\tdf[j,i]=media\n",
+    "\t\t\t}\n",
+    "\t\t}\n",
+    "\t}\n",
+    "\treturn (df)\n",
+    "}\n",
+    "\n",
+    "checarMedias = function(df){\n",
+    "\tmediaNA = data.frame()\n",
+    "\tmedia = data.frame()\n",
+    "\tfor(i in 1:ncol(df)){\n",
+    "\t\tmediaNA = rbind(mediaNA,mean(df[,i]))\n",
+    "\t\tmedia = rbind(media,mean(na.omit(df[,i])))\n",
+    "\t}\n",
+    "\tretorno = data.frame(mNA=mediaNA,m=media)\n",
+    "\treturn(retorno)\n",
+    "}\n",
+    "\n",
+    "#Verificar se a imputação eliminou os NAs\n",
+    "imputarTodasMedias = function(estacoes){\n",
+    "\tfor (i in 1:12){\n",
+    "\t\tprint(c(\"NAs em\",i,\"antes: \",contarNA(estacoes[[i]])))\n",
+    "\t\testacoes[[i]] = imputarMedia(estacoes[[i]])\n",
+    "\t\tprint(c(\"NAs em\",i,\"depois: \",contarNA(estacoes[[i]])))\n",
+    "\t}\n",
+    "\treturn (estacoes)\n",
+    "}\n",
+    "\n",
+    "estacoes = imputarTodasMedias(estacoes)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Novamente, são verificadas as correlações do conjunto, já com os dados faltantes devidamente tratados. A correlação pode ser verificada tanto visualmente, com a função \"plot()\", quando de forma tabular, com a função \"cor()\""
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "#Estatísticas do conjunto\n",
+    "#Graficos e tabelas de correlação para PM2.5\n",
+    "#plot(estacoes[[1]][c(6,8,9,10,11,12,13,14,15,16,17)])\n",
+    "cor(estacoes[[1]][c(6,8,9,10,11,12,13,14,15,16,17)])\n",
+    "#Graficos e tabelas de correlação para PM10\n",
+    "#plot(estacoes[[1]][c(7,8,9,10,11,12,13,14,15,16,17)])\n",
+    "cor(estacoes[[1]][c(7,8,9,10,11,12,13,14,15,16,17)])\n"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Uma outra maneira de verificar se há multicolinearidades no conjunto de dados é utillizando o Fator de Inflação de Variância (Variance Inflation Factor, VIF). O VIF é calculado por\n",
+    "\n",
+    "\\begin{align*}\n",
+    "VIF = \\frac{1}{1-R^{2}}\n",
+    "\\end{align*}\n",
+    "\n",
+    "e indica que há multicolinearidade se o valor for maior que 10. No caso do conjunto de dados em estudo, nenhum VIF supera 3.5, indicando a esperada falta de multicolinearidade"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "#Verificar multicolineariade do PM2.5\n",
+    "verificarMulticolinearidades = function(estacoes){\n",
+    "\tfor (i in 1:12){\n",
+    "\t\tpm25 <- lm(PM2.5 ~ SO2 + NO2 + CO + O3 + TEMP + PRES + DEWP + RAIN + wd + WSPM, data = estacoes[[i]])\n",
+    "\t\tprint(1/(1-summary(pm25)$r.squared))\n",
+    "\t}\n",
+    "\n",
+    "\tfor (i in 1:12){\n",
+    "\t\tpm10 <- lm(PM10 ~ SO2 + NO2 + CO + O3 + TEMP + PRES + DEWP + RAIN + wd + WSPM, data = estacoes[[i]])\n",
+    "\t\tprint(1/(1-summary(pm10)$r.squared))\n",
+    "\t}\n",
+    "\treturn (estacoes)\n",
+    "}\n",
+    "\n",
+    "estacoes = verificarMulticolinearidades(estacoes)\n"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Enfim, os modelos podem ser construídos. Neste momento, vamos fazer uso do Critério De informação Akaike (AIC) para escolher o modelo que melhor se ajusta aos dados.\n",
+    "\n",
+    "Para isto, definem-se manualmente dois modelos: o mais complexo possível, utilizando as 10 variáveis, e o mais simples possível, que utiliza apenas uma - neste caso, a variável SO2, mas qualquer outra poderia ser escolhida, sob o efeito de influenciar os rumos do algoritmo. Ao executar o AIC, pode-se tanto iniciar pelo método mais complexo rumo ao mais simples retirando variáveis até que um valor ideal seja atingido, ou o caminho inverso, no qual coloca-se uma variável a cada iteração do modelo.\n",
+    "\n",
+    "Neste caso, será aplicado o AIC com direção \"backward\", ainda que o outro método tenha atingido exatamente o mesmo resultado.\n",
+    "\n",
+    "São gerados ao todo 24 modelos de RLM, cada um referente a uma estação e um indicador. Cada modelo pode ter suas suposições verificadas através da função \"plot()\", que gera 4 gráficos de acompanhamento. Além disso, a função \"summary()\" descreve os indicadores de cada modelo"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "#Construir o modelo que mais se ajuste aos dados\n",
+    "#install.packages(\"MASS\")\n",
+    "library(MASS)\n",
+    "\n",
+    "for (i in 1:12){\n",
+    "\t#Modelo para PM2.5\n",
+    "\tmodelo.inicial = lm(PM2.5 ~ SO2 + NO2 + CO + O3 + TEMP + PRES + DEWP + RAIN + wd + WSPM, data = estacoes[[i]])\n",
+    "\tmodelo.simples = lm(PM2.5 ~ SO2, data = estacoes[[i]])\n",
+    "\tmodelo.escolhido = stepAIC(modelo.inicial, scope = list(upper = modelo.inicial, lower = modelo.simples), direction = \"backward\")\n",
+    "\t#stepAIC(modelo.simples, scope = list(upper = modelo.inicial, lower = modelo.simples), direction = \"forward\")\n",
+    "\t\n",
+    "\t#Modelo escolhido para PM2.5\n",
+    "\tmodeloPM2.5 = modelo.escolhido\n",
+    "\t#plot(modeloPM2.5)\n",
+    "\tsummary(modeloPM2.5)\n",
+    "\t\n",
+    "\t#Modelo para PM10\n",
+    "\tmodelo.inicial = lm(PM10 ~ SO2 + NO2 + CO + O3 + TEMP + PRES + DEWP + RAIN + wd + WSPM, data = estacoes[[i]])\n",
+    "\tmodelo.simples = lm(PM10 ~ SO2, data = estacoes[[i]])\n",
+    "\tmodelo.escolhido = stepAIC(modelo.inicial, scope = list(upper = modelo.inicial, lower = modelo.simples), direction = \"backward\")\n",
+    "\t#stepAIC(modelo.simples, scope = list(upper = modelo.inicial, lower = modelo.simples), direction = \"forward\")\n",
+    "\t\n",
+    "\t#Modelo escolhido para PM10\n",
+    "\tmodeloPM10 = modelo.escolhido\n",
+    "\t#plot(modeloPM10)\n",
+    "\tsummary(modeloPM10)\n",
+    "}\n",
+    "\n",
+    "for (i in 1:12){\n",
+    "\t#Intervalos de confiança dos coeficientes dos modelos\n",
+    "\tconfint(modeloPM2.5)\n",
+    "\tconfint(modeloPM10)\n",
+    "}"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## CONCLUSÃO\n",
+    "\n",
+    "## OUTRAS ABORDAGENS POSSÍVEIS\n",
+    "\n",
+    "Para ampliar a profundidade desta análise, são apresentadas algumas possibilidades, tanto de extensão da análise quanto de variação de metodologias\n",
+    "\n",
+    "- Utilizar outras linguagens de programação (Python, Java...)\n",
+    "- Utilizar outros métodos de imputação de dados faltantes (Regressão Linear)\n",
+    "- Validar a regressão com dados de treino e teste (Por exemplo, gerar um modelo com dados de 3 anos e testar o modelo com os dados do quarto ano)\n",
+    "- Utilizar outros métodos de predição de valores (Redes neurais, Métodos de médias móveis, métodos auto regressivos...)\n",
+    "- Apresentar graficamente os resultados das análises (Com bibliotecas como ggplot2)\n",
+    "\n",
+    "\n",
+    "## REFERÊNCIAS\n",
+    "\n",
+    "Harrell F.E. (2001) Missing Data. In: Regression Modeling Strategies. Springer Series in Statistics. Springer, New York, NY\n",
+    "\n",
+    "dos Santos, R. S. Análise da variação de passageiros no sistema de transporte público de curitiba: projeção de valores e identificação de fatores de influência. Universidade Federal do Paraná, 2019.\n",
+    "\n",
+    "\n"
+   ]
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "R",
+   "language": "R",
+   "name": "ir"
+  },
+  "language_info": {
+   "codemirror_mode": "r",
+   "file_extension": ".r",
+   "mimetype": "text/x-r-source",
+   "name": "R",
+   "pygments_lexer": "r",
+   "version": "3.6.1"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 2
+}
